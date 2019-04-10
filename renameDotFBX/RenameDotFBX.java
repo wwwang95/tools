@@ -1,3 +1,5 @@
+package world.oasis;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;
@@ -5,7 +7,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-public class RenameDotFBX {
+public class Main {
 
     private static final char _separator = '/';
     private static final char _dot = '.';
@@ -16,20 +18,24 @@ public class RenameDotFBX {
     private static final String _output_directory = "/output";
     private static final String _temp_directory = "/temp";
     private static final String _log_directory = "/logs";
-    private static final String _log_name = "log";
+    private static final String _problematic_directory = "/problematic";
 
-    private static String logPath;
+    private static String logPath = "/log";
+    private static String problematicPath;
 
     public static void main(String[] args) {
         String currentDirectoryPath = System.getProperty("user.dir");
+        // String currentDirectoryPath = "D:\\Data\\job\\模型\\FBX文件更名工具";
         String modelDirectoryPath = currentDirectoryPath + _model_directory;
         String outputDirectoryPath = currentDirectoryPath + _output_directory;
         String tempDirectoryPath = currentDirectoryPath + _temp_directory;
         String logDirectoryPath = currentDirectoryPath + _log_directory;
-        logPath = currentDirectoryPath + _separator +  _log_name;
+        String problematicDirectoryPath = currentDirectoryPath + _problematic_directory;
+        logPath = currentDirectoryPath + logPath;
+        problematicPath = currentDirectoryPath + _problematic_directory;
 
         initLog(logDirectoryPath);
-        handler(modelDirectoryPath, outputDirectoryPath, tempDirectoryPath);
+        handler(modelDirectoryPath, outputDirectoryPath, tempDirectoryPath, problematicDirectoryPath);
     }
 
     private static void initLog(String logDirectoryPath){
@@ -70,7 +76,7 @@ public class RenameDotFBX {
         }
     }
 
-    private static void handler(String modelDirectoryPath, String outputDirectoryPath, String tempDirectoryPath){
+    private static void handler(String modelDirectoryPath, String outputDirectoryPath, String tempDirectoryPath, String problematicDirectoryPath){
         File modelDirectory = new File(modelDirectoryPath);
         if(!modelDirectory.exists() || !modelDirectory.isDirectory()){
             logInfo("不存在模型目录，已重新生成");
@@ -83,12 +89,23 @@ public class RenameDotFBX {
             outputDirectory.mkdirs();
         }
         if(outputDirectory.listFiles().length > 0){
-            clearOutputDirectory(outputDirectory);
+            clearDirectory(outputDirectory);
+        }
+
+        File problematicDirectory = new File(problematicDirectoryPath);
+        if(!problematicDirectory.exists() || !problematicDirectory.isDirectory()){
+            problematicDirectory.mkdirs();
+        }
+        if(problematicDirectory.listFiles().length > 0){
+            clearDirectory(problematicDirectory);
         }
 
         File tempDirectory = new File(tempDirectoryPath);
         if(!tempDirectory.exists() || !tempDirectory.isDirectory()){
             tempDirectory.mkdirs();
+        }
+        if(tempDirectory.listFiles().length > 0){
+            clearDirectory(tempDirectory);
         }
 
         for(File file : modelDirectory.listFiles()){
@@ -103,27 +120,75 @@ public class RenameDotFBX {
 
             try {
                 unzip(file, tmpPath);
-                if(!renameDotFBX(tmpPath, modelName)){
-                    System.out.println("处理文件失败：该文件中包含多个或未包含FBX文件，路径为" + modelFilePath);
-                    logInfo("处理文件失败：该文件中包含多个或未包含FBX文件，路径为" + modelFilePath);
-                    continue;
-                }
+                renameDotFBX(tmpPath, modelName);
                 zipDirectory(tmpPath, outputPath);
                 System.out.println("处理文件完成：" + modelFilePath);
                 logInfo("处理文件完成：" + modelFilePath);
             } catch (IOException e){
-                System.out.println("处理文件失败：" + modelFilePath);
-                logInfo("处理文件失败：" + modelFilePath);
+                System.out.println("处理文件失败：" + modelFilePath + ", 异常信息：" + e.getMessage());
+                logInfo("处理文件失败：" + modelFilePath + ", 异常信息：" + e.getMessage());
+                exceptionHandler(modelFilePath, tmpPath, outputPath);
+                logException(e);
+                continue;
+            } catch (RuntimeException e){
+                System.out.println("处理文件失败：" + modelFilePath + ", 异常信息：" + e.getMessage());
+                logInfo("处理文件失败：" + modelFilePath + ", 异常信息：" + e.getMessage());
+                exceptionHandler(modelFilePath, tmpPath, outputPath);
+                logException(e);
+                continue;
+            } catch (Exception e){
+                System.out.println("处理文件失败：" + modelFilePath + ", 异常信息：" + e.getMessage());
+                logInfo("处理文件失败：" + modelFilePath + ", 异常信息：" + e.getMessage());
+                exceptionHandler(modelFilePath, tmpPath, outputPath);
                 logException(e);
                 continue;
             }
         }
     }
 
-    private static void clearOutputDirectory(File directory){
+    private static void exceptionHandler(String modelPath, String tmpPath, String outputPath){
+        File tmpDirectory = new File(tmpPath);
+        if(tmpDirectory.exists()){
+            if(tmpDirectory.listFiles().length > 0){
+                clearDirectory(tmpDirectory);
+            }
+
+            tmpDirectory.delete();
+        }
+
+        File outputFile = new File(outputPath);
+        if(outputFile.exists()){
+            outputFile.delete();
+        }
+
+        File modelFile = new File(modelPath);
+        File problematicModelFile = new File(problematicPath, modelFile.getName());
+        int len;
+        byte[] buf = new byte[1024 * 1024];
+        try(FileInputStream fis = new FileInputStream(modelFile);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            FileOutputStream fos = new FileOutputStream(problematicModelFile);
+            BufferedOutputStream bos = new BufferedOutputStream(fos)){
+            while ((len = bis.read(buf)) != -1) {
+                bos.write(buf, 0, len);
+            }
+            bos.flush();
+
+        } catch (FileNotFoundException e) {
+            System.out.println("复制问题模型文件失败：" + modelPath + ", 异常信息：" + e.getMessage());
+            logInfo("复制问题模型文件失败：" + modelPath + ", 异常信息：" + e.getMessage());
+            logException(e);
+        } catch (IOException e) {
+            System.out.println("复制问题模型文件失败：" + modelPath + ", 异常信息：" + e.getMessage());
+            logInfo("复制问题模型文件失败：" + modelPath + ", 异常信息：" + e.getMessage());
+            logException(e);
+        }
+    }
+
+    private static void clearDirectory(File directory){
         for(File file : directory.listFiles()){
             if(file.isDirectory()){
-                clearOutputDirectory(file);
+                clearDirectory(file);
             }
 
             file.delete();
@@ -139,7 +204,7 @@ public class RenameDotFBX {
         ZipEntry zipEntry;
         try(FileInputStream fis = new FileInputStream(sourceFile);
             BufferedInputStream bis = new BufferedInputStream(fis);
-            ZipInputStream zis = new ZipInputStream(bis, Charset.forName("gbk"))){
+            ZipInputStream zis = new ZipInputStream(bis, Charset.forName("utf8"))){
             while((zipEntry = zis.getNextEntry()) != null){
                 int targetFileNameIndex = zipEntry.getName().indexOf(_separator) + 1;
                 File file = new File(targetDirectoryPath, zipEntry.getName().substring(targetFileNameIndex));
@@ -186,7 +251,7 @@ public class RenameDotFBX {
         if(sourceFiles != null && sourceFiles.length > 0){
             try(FileOutputStream fos = new FileOutputStream(targetFile);
                 BufferedOutputStream bos = new BufferedOutputStream(fos);
-                ZipOutputStream zos = new ZipOutputStream(bos, Charset.forName("gbk"))){
+                ZipOutputStream zos = new ZipOutputStream(bos, Charset.forName("utf8"))){
                 zip(zos, sourceFile, sourceFile.getParent());
                 zos.flush();
             }
@@ -220,25 +285,38 @@ public class RenameDotFBX {
         sourceFile.delete();
     }
 
-    private static boolean renameDotFBX(String directoryPath, String fbxFileName){
+    private static void renameDotFBX(String directoryPath, String fbxFileName){
         File directory = new File(directoryPath);
         if(!directory.exists() || !directory.isDirectory()){
-            return false;
+            return;
         }
 
         File[] files = directory.listFiles();
         int fbxFileNumber = 0;
         for(File file : files){
+            if(file.isDirectory()){
+                if(file.getName().equals("_CustomAvatar")){
+                    renameDotFBX(file.getPath(), fbxFileName);
+                } else {
+                    // renameDotFBX(file.getPath(), fbxFileName + "@" + file.getName());
+                    renameDotFBX(file.getPath(), fbxFileName);
+                }
+                continue;
+            }
+
+            if(file.getName().length() < 4){
+                continue;
+            }
+
             String fileType = file.getName().substring(file.getName().length() - 3);
-            if(fileType.equalsIgnoreCase(_fbx_file_type) && file.getName().charAt(file.getName().length() - 4) == _dot){
+            if(_fbx_file_type.equalsIgnoreCase(fileType) && file.getName().charAt(file.getName().length() - 4) == _dot){
                 if(++fbxFileNumber > 1){
-                    return false;
+                    throw new RuntimeException("文件夹下存在多个fbx文件");
                 }
                 file.renameTo(new File(file.getParentFile().getPath(), fbxFileName + _dot + _fbx_file_type));
             }
-        }
 
-        return true;
+        }
     }
 
     private static void logInfo(String line){
