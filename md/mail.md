@@ -1,4 +1,4 @@
-#### Install muttr and mstmp
+### Install muttr and mstmp
 ```
 #ubuntu/debian
 apt install -y mutt msmtp
@@ -12,7 +12,7 @@ you may need to install msmtp on centos via cmake
 --with-ssl=openssl
 ```
 
-#### Edit `/etc/Muttrc` and add content below
+### Edit `/etc/Muttrc` and add content below
 ```
 set charset = "utf-8"
 set sendmail = "/usr/bin/msmtp"
@@ -23,7 +23,7 @@ set envelope_from = yes
 set crypt_use_gpgme = no
 ```
 
-#### Config msmtp
+### Config msmtp
 Run `vi ~/.msmtprc` and add content below
 ```
 account default
@@ -46,7 +46,7 @@ chmod 600 .msmtprc
 touch ~/.msmtp.log
 ```
 
-#### Send mail
+### Send mail
 ```
 echo "content" | mutt -s "title" -e 'set content_type="text/html"' xxxxx@xxx.xxx
 ```
