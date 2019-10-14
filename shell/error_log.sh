@@ -1,8 +1,10 @@
 #！/bin/bash
 
 TODAY_STR=`date +"%Y-%m-%d"`
+NOW_STR=`date +"%Y-%m-%d %H:%M:%S"`
 BASE_DIRECTORY="xxxxxx"
 ERROR_LOG_NAME="xxxxxx"
+LOG="xxxxxxxx"
 PROJECTS=()
 
 function checkProject {
@@ -15,10 +17,11 @@ function checkProject {
 			PROJECTS[${#PROJECTS[*]}]=$2
 		fi
 	else 
-		echo \'$ERROR_LOG_PATH\' not exist
+		echo \[$NOW_STR\]  \'$ERROR_LOG_PATH\' not exist >> $LOG
 	fi
 }
 
+echo \[$NOW_STR\]  projects\' error log check task begins >> $LOG
 if [ -d $BASE_DIRECTORY ];
 then 
 	for PROJECT in `ls $BASE_DIRECTORY`
@@ -29,15 +32,21 @@ then
 			checkProject $PROJECT_DIRECTORY $PROJECT
 		fi
 	done
-	TABLE="<table style='border: solid 1px #000000;'>"
-	for PROJECT_ITEM in ${PROJECTS[*]}
-	do
-		TABLE=$TABLE"<tr><td>"$PROJECT_ITEM"</td></tr>"
-	done
-	TABLE=$TABLE"</table>"
-	BODY="<div>如下工程出现新的错误日志:</div>"$TABLE
-	TITLE="[xxxxxx]日常维护提醒_"$TODAY_STR
-	echo $BODY | mutt -s $TITLE -e 'set content_type="text/html"' xxxxxx@xxx.xxx
+	if [ ${#PROJECTS[*]} -gt 0 ];
+	then
+		TABLE="<table style='border: solid 1px #000000;'>"
+		for PROJECT_ITEM in ${PROJECTS[*]}
+		do
+			TABLE=$TABLE"<tr><td>"$PROJECT_ITEM"</td></tr>"
+		done
+		TABLE=$TABLE"</table>"
+		BODY="<div>如下工程出现新的错误日志:</div>"$TABLE
+		TITLE="[xxxxxx]日常维护提醒_"$TODAY_STR
+		echo $BODY | mutt -s $TITLE -e 'set content_type="text/html"' xxxxxx@xxx.xxx
+	else 
+		echo \[$NOW_STR\]  there was no error log occured >> $LOG
+	fi
 else 
-	echo \'$BASE_DIRECTORY\' not exist
+	echo \[$NOW_STR\]  \'$BASE_DIRECTORY\' not exist >> $LOG
 fi
+echo \[$NOW_STR\]  projects\' error log check task completed >> $LOG
