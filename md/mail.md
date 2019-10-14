@@ -5,6 +5,12 @@ apt install -y mutt msmtp
 #centos
 yum install -y mutt msmtp
 ```
+you may need to install msmtp on centos via cmake
+```
+--prefix=/usr/local/msmtp 
+--sysconfdir=/usr/local/msmtp/etc 
+--with-ssl=openssl
+```
 
 #### Edit `/etc/Muttrc` and add content below
 ```
