@@ -21,12 +21,16 @@ set crypt_use_gpgme = no
 Run `vi ~/.msmtprc` and add content below
 ```
 account default
-auth plain
+auth login
 host 'smtp server address'
+port 465
 from 'your email'
 user 'your email'
 password 'your email authrization code'
 logfile ~/.msmtp.log
+tls on
+tls_starttls off
+tls_certcheck off
 ```
 
 Modify msmtp configuration file's policy and create log file
