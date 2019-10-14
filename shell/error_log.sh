@@ -44,7 +44,7 @@ then
 		TITLE="[xxxxxx]日常维护提醒_"$TODAY_STR
 		echo $BODY | mutt -s $TITLE -e 'set content_type="text/html"' xxxxxx@xxx.xxx
 	else 
-		echo \[$NOW_STR\]  there was no error log occured >> $LOG
+		echo \[$NOW_STR\]  there was no new error occured >> $LOG
 	fi
 else 
 	echo \[$NOW_STR\]  \'$BASE_DIRECTORY\' not exist >> $LOG
