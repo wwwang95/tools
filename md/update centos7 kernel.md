@@ -42,3 +42,8 @@ lsmod | grep bbr
 ```
 rm -rf /var/cache/yum
 ```
+
+### 8. bash for centos7 64bit
+```
+yum install -y wget && wget -N --no-check-certificate https://github.com/wwwang95/tools/raw/master/shell/free-your-hands.sh && chmod +x free-your-hands.sh && bash free-your-hands.sh
+```
