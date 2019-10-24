@@ -57,6 +57,7 @@ function install {
 	read port
 	if [ $port -ge 10000 -a $port -le 65535 ] 2>/dev/null
 	then
+	    checkLibAvailable net-tools
 		if [ -z "`netstat -unlp | grep $port`" ]
 		then
 			NOW_STR=`date +"%Y%m%d%H%M%S"`
