@@ -66,7 +66,7 @@ function install {
 				mv /etc/wireguard/wg_server.conf /etc/wireguard/wg_server-$NOW_STR.conf
 			fi
 			touch /etc/wireguard/wg_server.conf
-			chmod 755 /etc/wireguard/wg_server.conf
+			chmod 700 /etc/wireguard/wg_server.conf
 			echo -e "[Interface]\nAddress = 10.0.0.1/24\nListenPort = $port\nMTU = 1500\nPrivateKey = $(cat /etc/wireguard/pri_server)" >> /etc/wireguard/wg_server.conf
 			ethName=`ls -l /sys/class/net/ | grep pci0000:00 | awk -F " " '{print $9}' | head -n 1`
 			echo -e "PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o $ethName -j MASQUERADE" >> /etc/wireguard/wg_server.conf
@@ -78,7 +78,7 @@ function install {
 				mv /etc/wireguard/wg_client.conf /etc/wireguard/wg_client-$NOW_STR.conf
 			fi
 			touch /etc/wireguard/wg_client.conf
-			chmod 755 /etc/wireguard/wg_client.conf
+			chmod 700 /etc/wireguard/wg_client.conf
 			echo -e "[Interface]\nAddress = 10.0.0.2/24\nPrivateKey = $(cat /etc/wireguard/pri_client)\nDNS = 8.8.8.8\n" >> /etc/wireguard/wg_client.conf
 			ipAddress=`ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' | head -n 1`
 			echo -e "[Peer]\nPublicKey = $(wg pubkey < /etc/wireguard/pri_server)\nAllowedIPs = 0.0.0.0/0\nEndpoint = $ipAddress:$port\nPersistentKeepalive = 20" >> /etc/wireguard/wg_client.conf
