@@ -82,6 +82,7 @@ function install {
 			echo -e "[Interface]\nAddress = 10.0.0.2/24\nPrivateKey = $(cat /etc/wireguard/pri_client)\nDNS = 8.8.8.8\n" >> /etc/wireguard/wg_client.conf
 			ipAddress=`ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' | head -n 1`
 			echo -e "[Peer]\nPublicKey = $(wg pubkey < /etc/wireguard/pri_server)\nAllowedIPs = 0.0.0.0/0\nEndpoint = $ipAddress:$port\nPersistentKeepalive = 20" >> /etc/wireguard/wg_client.conf
+			iptables -F
 			wg-quick up wg_server
 			echo "-----------------------------"
 			echo "the client conf file is /etc/wireguard/wg_client.conf"
