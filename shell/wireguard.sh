@@ -68,7 +68,7 @@ function install {
 			fi
 			touch /etc/wireguard/wg_server.conf
 			chmod 700 /etc/wireguard/wg_server.conf
-			echo -e "[Interface]\nAddress = 10.0.0.1/24\nListenPort = $port\nMTU = 1500\nPrivateKey = $(cat /etc/wireguard/pri_server)" >> /etc/wireguard/wg_server.conf
+			echo -e "[Interface]\nAddress = 10.0.0.1/24\nListenPort = $port\nMTU = 1500\nPrivateKey = $(cat /etc/wireguard/pri_server)\nDNS = 1.1.1.1,8.8.8.8" >> /etc/wireguard/wg_server.conf
 			ethName=`ls -l /sys/class/net/ | grep pci0000:00 | awk -F " " '{print $9}' | head -n 1`
 			echo -e "PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o $ethName -j MASQUERADE" >> /etc/wireguard/wg_server.conf
 			echo -e "PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o $ethName -j MASQUERADE\n" >> /etc/wireguard/wg_server.conf
