@@ -7,6 +7,7 @@ function showMenu {
 	echo "2. Restart WireGuard"
 	echo "3. Modify WireGuard UDP port"
 	echo "4. Display client configuration QR code"
+	echo "5. Display connections"
 	echo "0. Quit"
 	echo "-----------------------------"
 	echo -n "Enter the item number: "
@@ -134,6 +135,9 @@ function readMenuNumber {
 	elif [ $num == 4 ]
 	then
 		showQRCode
+	elif [ $num == 5 ]
+    then
+    	wg
 	elif [ $num == 0 ]
 	then
 		echo "quit"
