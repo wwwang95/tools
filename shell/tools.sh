@@ -30,6 +30,7 @@ function updateCentos7Kernel {
 		echo "latest kernel has been installed: $Installed_kernel_version"
 	else
 		echo "the installed kernel's version is: $Installed_kernel_version, latest kernel is available: $Latest_kernel_version"
+		yum remove -y kernel-tools*
 		yum --enablerepo=elrepo-kernel --skip-broken install -y kernel-ml kernel-ml-devel kernel-ml-headers kernel-ml-tools
 		echo "-----------------------------"
 		rpm -q kernel-ml-$Latest_kernel_version | awk '{if(/^package.*is not installed$/){print "kernel-ml-'$Latest_kernel_version' installation failed"}else{print "kernel-ml-'$Latest_kernel_version' installation succeed"}}'
