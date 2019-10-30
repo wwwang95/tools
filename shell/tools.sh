@@ -4,9 +4,19 @@ function showMenu {
 	echo "FREE YOUR HANDS:)"
 	echo "-----------------------------"
 	echo "1. Update Centos7 Kernel"
+	echo "2. Clear System cache"
+	echo "3. Clear Yum cache"
+	echo "4. List Connecting IP address"
 	echo "0. Quit"
 	echo "-----------------------------"
 	echo -n "Enter the item number: "
+}
+
+function checkLibAvailable {
+	if [ "`rpm -q $1 | awk '{if(/^package.*is not installed$/){print 1}}'`" ]
+	then
+		yum install -y $1
+	fi
 }
 
 function updateCentos7Kernel {
@@ -37,7 +47,7 @@ function updateCentos7Kernel {
 		fi
 		grub2-mkconfig -o /boot/grub2/grub.cfg
 		
-		if [ -z `lsmod | grep bbr | awk '{print $1}'` ]
+		if [ -z "`lsmod | grep bbr | awk '{print $1}'`" ]
 		then
 			echo 'net.core.default_qdisc=fq' >> /etc/sysctl.conf
 			echo 'net.ipv4.tcp_congestion_control=bbr'>> /etc/sysctl.conf
@@ -60,6 +70,19 @@ function readMenuNumber {
 	if [ $num == 1 ];
 	then 
 		updateCentos7Kernel
+	elif [ $num == 2 ]
+	then
+		echo 3 > /proc/sys/vm/drop_caches
+		echo 2 > /proc/sys/vm/drop_caches
+		echo 1 > /proc/sys/vm/drop_caches
+		free -h
+	elif [ $num == 3 ]
+	then
+		rm -rf /var/cache/yum
+	elif [ $num == 4 ]
+	then
+		checkLibAvailable net-tools
+		netstat -na | grep ESTABLISHED | awk '{print $5}' | awk -F: '{print $1}' | grep -v -E '192.168|127.0' | sort | uniq -c | sort -rn
 	elif [ $num == 0 ]
 	then
 		echo "quit"
