@@ -38,7 +38,7 @@ function updateCentos7Kernel {
 		rpm -q kernel-ml-headers-$Latest_kernel_version | awk '{if(/^package.*is not installed$/){print "kernel-ml-headers-'$Latest_kernel_version' installation failed"}else{print "kernel-ml-headers-'$Latest_kernel_version' installation succeed"}}'
 		rpm -q kernel-ml-tools-$Latest_kernel_version | awk '{if(/^package.*is not installed$/){print "kernel-ml-tools-'$Latest_kernel_version' installation failed"}else{print "kernel-ml-tools-'$Latest_kernel_version' installation succeed"}}'
 		echo "-----------------------------"
-		
+
 		if [ `cat /etc/default/grub | sed -n '/GRUB_DEFAULT/p' | awk -F'=' '{print $2}'` != 0 ]
 		then
 			echo "modify grub configuration"
@@ -47,7 +47,7 @@ function updateCentos7Kernel {
 			sed -i '/GRUB_DEFAULT/s/^.*$/GRUB_DEFAULT=0/g' /etc/default/grub
 		fi
 		grub2-mkconfig -o /boot/grub2/grub.cfg
-		
+
 		if [ -z "`lsmod | grep bbr | awk '{print $1}'`" ]
 		then
 			echo 'net.core.default_qdisc=fq' >> /etc/sysctl.conf
@@ -69,7 +69,7 @@ function updateCentos7Kernel {
 function readMenuNumber {
 	read num
 	if [ $num == 1 ];
-	then 
+	then
 		updateCentos7Kernel
 	elif [ $num == 2 ]
 	then

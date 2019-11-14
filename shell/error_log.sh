@@ -1,6 +1,7 @@
 #！/bin/bash
 
 TODAY_STR=`date +"%Y-%m-%d"`
+YESTERDAY_STR=`date -d "1 days ago" "+%Y-%m-%d"`
 NOW_STR=`date +"%Y-%m-%d %H:%M:%S"`
 BASE_DIRECTORY="xxxxxx"
 ERROR_LOG_NAME="xxxxxx"
@@ -12,7 +13,7 @@ function checkProject {
 	if [ -f $ERROR_LOG_PATH ];
 	then
 		LOG_CHANGE_DATE=`stat $ERROR_LOG_PATH | sed -n '/Change/p' | awk '{print $2}'`
-		if [ $LOG_CHANGE_DATE == $TODAY_STR ];
+		if [ $LOG_CHANGE_DATE == $TODAY_STR -o $LOG_CHANGE_DATE == $YESTERDAY_STR ];
 		then 
 			PROJECTS[${#PROJECTS[*]}]=$2
 		fi
